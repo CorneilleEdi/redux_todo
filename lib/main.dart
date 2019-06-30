@@ -9,10 +9,9 @@ import 'package:redux_todo/widgets/add_item.dart';
 import 'package:redux_todo/widgets/list_item.dart';
 import 'package:redux_todo/widgets/remove_items.dart';
 
-
 void main() {
   final Store<AppState> store = Store<AppState>(appStateReducer,
-      initialState: AppState.initialState(), middleware: [appStateMiddleware]);
+      initialState: AppState.initialState(), middleware: appStateMiddleware());
 
   runApp(MyApp(store));
 }
@@ -32,7 +31,7 @@ class MyApp extends StatelessWidget {
         home: StoreBuilder<AppState>(
           onInit: (store) => store.dispatch(GetItemsAction()),
           builder: (context, Store<AppState> store) {
-           return  MyHomePage(title: 'Redux Todo', store: store);
+            return MyHomePage(title: 'Redux Todo', store: store);
           },
         ),
       ),
@@ -79,13 +78,14 @@ class ViewModel {
   final Function(String) onAddItem;
   final Function(Item) onRemoveItem;
   final Function() onRemoveItems;
+  final Function(Item) onCompleted;
 
-  ViewModel({
-    this.items,
-    this.onAddItem,
-    this.onRemoveItem,
-    this.onRemoveItems,
-  });
+  ViewModel(
+      {this.items,
+      this.onAddItem,
+      this.onRemoveItem,
+      this.onRemoveItems,
+      this.onCompleted});
 
   factory ViewModel.create(Store<AppState> store) {
     _onAddItem(String body) {
@@ -100,11 +100,16 @@ class ViewModel {
       store.dispatch(RemoveItemsAction());
     }
 
+    _onCompleted(Item item) {
+      store.dispatch(ItemCompletedAction(item));
+    }
+
     return ViewModel(
       items: store.state.items,
       onAddItem: _onAddItem,
       onRemoveItem: _onRemoveItem,
       onRemoveItems: _onRemoveItems,
+      onCompleted: _onCompleted,
     );
   }
 }
