@@ -3,16 +3,16 @@ import 'package:flutter_redux/flutter_redux.dart';
 import 'package:redux/redux.dart';
 import 'package:redux_todo/model/model.dart';
 import 'package:redux_todo/redux/actions.dart';
+import 'package:redux_todo/redux/middleware.dart';
 import 'package:redux_todo/redux/reducres.dart';
 import 'package:redux_todo/widgets/add_item.dart';
 import 'package:redux_todo/widgets/list_item.dart';
 import 'package:redux_todo/widgets/remove_items.dart';
 
+
 void main() {
-  final Store<AppState> store = Store<AppState>(
-    appStateReducer,
-    initialState: AppState.initialState(),
-  );
+  final Store<AppState> store = Store<AppState>(appStateReducer,
+      initialState: AppState.initialState(), middleware: [appStateMiddleware]);
 
   runApp(MyApp(store));
 }
@@ -28,18 +28,22 @@ class MyApp extends StatelessWidget {
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
         title: 'Flutter Demo',
-        theme: ThemeData(
-          primaryColor: Colors.redAccent
+        theme: ThemeData(primaryColor: Colors.redAccent),
+        home: StoreBuilder<AppState>(
+          onInit: (store) => store.dispatch(GetItemsAction()),
+          builder: (context, Store<AppState> store) {
+           return  MyHomePage(title: 'Redux Todo', store: store);
+          },
         ),
-        home: MyHomePage(title: 'Redux Todo'),
       ),
     );
   }
 }
 
 class MyHomePage extends StatefulWidget {
-  MyHomePage({Key key, this.title}) : super(key: key);
+  MyHomePage({Key key, this.title, this.store}) : super(key: key);
   final String title;
+  final Store<AppState> store;
 
   @override
   _MyHomePageState createState() => _MyHomePageState();
@@ -54,7 +58,7 @@ class _MyHomePageState extends State<MyHomePage> {
       ),
       body: StoreConnector<AppState, ViewModel>(
         converter: (Store<AppState> store) => ViewModel.create(store),
-        builder: (context, ViewModel viewModel){
+        builder: (context, ViewModel viewModel) {
           return Column(
             children: <Widget>[
               AddItemWidget(viewModel),
